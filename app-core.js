@@ -132,3 +132,23 @@ const norm=s=>(s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
 const cleanText=v=>(v??'').toString().replace(/\\n/g,'\n');
 const main=c=>cleanText(c?.text??c?.prompt??'');
 const interactive=t=>['text_answer','multi_term_answer','choice','quiz','sorting','gps','gps_confirmation','photo','confirm'].includes(t);
+async function getEvidenceSignedUrl(evidenceId){
+ if(!session?.session_token)throw new Error('Session není aktivní.');
+ const res=await fetch(`${SUPABASE_URL}/functions/v1/get-game-evidence-url`,{
+   method:'POST',
+   headers:{
+     'apikey':SUPABASE_KEY,
+     'Authorization':`Bearer ${SUPABASE_KEY}`,
+     'Content-Type':'application/json'
+   },
+   body:JSON.stringify({
+     session_token:session.session_token,
+     device_token:deviceToken,
+     evidence_id:evidenceId
+   })
+ });
+ const txt=await res.text();
+ let body=null;try{body=txt?JSON.parse(txt):null}catch{body={message:txt}}
+ if(!res.ok||!body?.ok)throw new Error(body?.message||body?.error||`HTTP ${res.status}`);
+ return body;
+}

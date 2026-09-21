@@ -53,7 +53,7 @@ function appendBlock(b){
    if(existing>=1){
      const img=document.createElement('div');
      img.id='courtyardDiagram'; img.className='reveal shown';
-     img.innerHTML=`<div class="bubble"><img src="./nadvorni-start.png" class="media courtyard-media" alt="Schéma začátku hlavolamu na nádvoří"></div>`;
+     img.innerHTML=`<div class="bubble"><img src="./nadvorni-start.svg?v=071" class="media courtyard-media" alt="Schéma začátku hlavolamu na nádvoří"></div>`;
      feed.appendChild(img);
    }
  }

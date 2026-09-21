@@ -28,3 +28,23 @@
 .exitGameBtn{background:transparent;color:#9aa29a;border:1px solid #333c37;border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer}
 .exitGameBtn:hover{color:#eef1ea;border-color:#59645d}
 @media(max-width:520px){.topActions{gap:7px}.exitGameBtn{padding:6px 8px;font-size:11px}}
+
+/* v0.8 archive */
+.archiveBtn{background:#1b211e;color:#d9ded5;border:1px solid #39423c;border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer}
+.archiveBtn:hover{border-color:#667168;color:#fff}
+.archiveOverlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(5px);z-index:10000;display:flex;justify-content:center;align-items:flex-end;padding:16px}
+.archivePanel{width:min(720px,100%);max-height:88vh;background:#0f1311;border:1px solid #333b37;border-radius:20px;box-shadow:0 28px 90px #000b;overflow:hidden;display:flex;flex-direction:column}
+.archiveHead{display:flex;justify-content:space-between;align-items:center;padding:18px 20px 12px;border-bottom:1px solid #29312d}
+.archiveHead h2{font-family:Georgia,serif;font-size:28px;margin:2px 0 0}.archiveKicker{font-size:10px;letter-spacing:.18em;color:#8d968b}
+.archiveClose{background:transparent;border:0;color:#bdc5bc;font-size:30px;line-height:1;cursor:pointer;padding:4px 7px}
+.archiveTabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 16px 0}
+.archiveTab{border:1px solid #303833;background:#141916;color:#9da69e;border-radius:9px;padding:10px;cursor:pointer;font-weight:650}
+.archiveTab span{opacity:.7}.archiveTab.active{background:#d7ddc8;color:#10140f;border-color:#d7ddc8}
+.archiveBody{padding:14px 16px 22px;overflow:auto}
+.archiveSection{display:grid;gap:12px}.archiveCard{border:1px solid #303833;background:#141816;border-radius:13px;padding:14px}
+.archiveCardLabel{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#8f988e;margin-bottom:9px}
+.archiveDocText{white-space:pre-wrap;font-family:Georgia,serif;line-height:1.55;background:#ded9c9;color:#28271f;padding:14px;border-radius:4px}
+.archiveEvidenceText{color:#c8cec6;line-height:1.5}.archiveEmpty{border:1px dashed #3a433e;border-radius:12px;padding:22px;text-align:center;color:#858e87}
+.evidenceMedia{margin-top:12px}.archivePhoto{display:block;width:100%;max-height:55vh;object-fit:contain;border-radius:10px;background:#080a09}
+@media(min-width:700px){.archiveOverlay{align-items:center}.archivePanel{max-height:82vh}}
+@media(max-width:520px){.archiveBtn,.exitGameBtn{padding:6px 7px;font-size:11px}.topActions{gap:5px}}

@@ -1,18 +1,13 @@
-# Hidden Adventures Player v0.8
+# Hidden Adventures Player v0.9
 
 Veřejná HTTPS verze Playeru pro Spiknutí.
 
-Nově ve v0.8:
-- Archiv dostupný během hry přímo z horní lišty.
-- Dokumenty se do archivu přidávají až poté, co je hráč skutečně objeví.
-- Fotodůkazy z privátního Supabase Storage lze bezpečně znovu zobrazit přes krátkodobý podepsaný odkaz.
-- GPS důkazy se zobrazují jako zaznamenaná / potvrzená poloha bez zbytečného zveřejnění přesných souřadnic v rozhraní.
-- Archiv respektuje synchronizovaný stav session a funguje i po obnovení hry.
+Nově ve v0.9:
+- skutečný graf přechodů mezi částmi hry,
+- podmíněné přechody podle odpovědi ve volbě,
+- více možných konců: část bez odpovídajícího odchozího přechodu je konec hry,
+- přechod může vést i na dřívější nebo vzdálenější část; postup už není svázaný jen číslem části,
+- synchronizace používá monotónní progressStep, takže funguje i u nelineárního průchodu,
+- archiv dokumentů vychází z bloků, které hráč skutečně viděl, ne z lineární pozice.
 
-Zachováno z v0.7.2:
-- synchronizace více zařízení,
-- GPS a privátní fotodůkazy,
-- nápovědy,
-- řazení,
-- maskované odpovědi,
-- Ukončit hru / Jiný kód.
+Pokud nejsou nastavené žádné podmíněné přechody, Spiknutí se chová stejně jako dosud.

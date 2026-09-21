@@ -12,3 +12,14 @@
 .sync-notice{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);background:#20251f;color:#eef0e7;border:1px solid rgba(255,255,255,.14);padding:10px 14px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:9999;box-shadow:0 8px 28px rgba(0,0,0,.28)}
 .sync-notice.show{opacity:1;transform:translate(-50%,0)}
 .photoPreview{margin-top:10px}.photo-thumb{max-height:260px;object-fit:cover}.photoPick.disabled{opacity:.55;pointer-events:none}.gps .result,.photo .result{margin-top:10px}
+/* v0.7 hints + sorting */
+.hintbox{margin-top:14px;padding-top:12px;border-top:1px solid rgba(180,190,170,.14)}
+.hintList{display:grid;gap:8px;margin-top:10px}
+.hintItem{background:#1a201d;border-left:3px solid #8d967e;border-radius:8px;padding:10px 12px;color:#d6dbd0;font-size:14px}
+.sortList{display:grid;gap:8px;margin:14px 0}
+.sortRow{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:8px;background:#0c100e;border:1px solid #343d38;border-radius:10px;padding:9px 10px}
+.sortHandle{color:#758078;font-size:18px}
+.sortText{font-weight:650;letter-spacing:.02em}
+.sortMoves{display:flex;gap:5px}
+.sortMoves button{width:34px;height:34px;border-radius:8px;border:1px solid #465049;background:#1b211e;color:#e8ebe4;font-size:18px;line-height:1;cursor:pointer}
+.sortingNote{margin:8px 0 12px}

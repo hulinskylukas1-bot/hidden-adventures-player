@@ -56,7 +56,7 @@ function rememberResponse(b,eventType,eventData){
  else if(eventType==='quiz_complete')state.responses[b.id]={kind:'quiz',value:eventData.answers||[]};
  else if(eventType==='gps_confirmed')state.responses[b.id]={kind:'gps',value:eventData};
  else if(eventType==='photo_uploaded')state.responses[b.id]={kind:'photo',value:eventData};
- else if(eventType==='sorting_bypass')state.responses[b.id]={kind:'sorting',value:'completed'};
+ else if(eventType==='sorting_complete'||eventType==='sorting_draft_complete')state.responses[b.id]={kind:'sorting',value:eventData.order||[]};
  else if(eventType==='confirm')state.responses[b.id]={kind:'confirm',value:true};
 }
 async function persistProgress(

@@ -1,13 +1,9 @@
-# Hidden Adventures Player v0.9
+# Hidden Adventures Player v0.9.1
 
-Veřejná HTTPS verze Playeru pro Spiknutí.
+Opravy navazující na v0.9:
+- po obnovení session se znovu vykreslí dosavadní historie konverzace, ne jen aktuální poslední část,
+- u starších lineárních testovacích session bez uložené historie se historie zpětně dopočítá z předchozích částí,
+- „Ukončit hru“ nově rozlišuje mezi odchodem s možností pozdějšího pokračování a skutečným restartem stejného kódu od začátku,
+- restart vyčistí herní postup na serveru, takže stejné zařízení i další synchronizovaná zařízení dostanou nový začátek.
 
-Nově ve v0.9:
-- skutečný graf přechodů mezi částmi hry,
-- podmíněné přechody podle odpovědi ve volbě,
-- více možných konců: část bez odpovídajícího odchozího přechodu je konec hry,
-- přechod může vést i na dřívější nebo vzdálenější část; postup už není svázaný jen číslem části,
-- synchronizace používá monotónní progressStep, takže funguje i u nelineárního průchodu,
-- archiv dokumentů vychází z bloků, které hráč skutečně viděl, ne z lineární pozice.
-
-Pokud nejsou nastavené žádné podmíněné přechody, Spiknutí se chová stejně jako dosud.
+Archiv, větvení, GPS, fotodůkazy a synchronizace zůstávají zachované.

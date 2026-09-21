@@ -1,6 +1,8 @@
 const SUPABASE_URL='https://hnhyscllpnyzbxhrffph.supabase.co';
 const SUPABASE_KEY='sb_publishable_w0N986iN3rTUBQjDLogNhQ_BXcmNRWH';
 async function rpc(name,params={}){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),12000);
   try{
     const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`,{
       method:'POST',
@@ -10,7 +12,8 @@ async function rpc(name,params={}){
         'Content-Type':'application/json',
         'Accept':'application/json'
       },
-      body:JSON.stringify(params)
+      body:JSON.stringify(params),
+      signal:controller.signal
     });
     let body=null;
     const txt=await res.text();
@@ -20,7 +23,10 @@ async function rpc(name,params={}){
       return {data:null,error:new Error(msg)};
     }
     return {data:body,error:null};
-  }catch(e){return {data:null,error:e}}
+  }catch(e){
+    if(e?.name==='AbortError')return {data:null,error:new Error('Server neodpověděl do 12 sekund. Zkuste znovu načíst stránku.')};
+    return {data:null,error:e};
+  }finally{clearTimeout(timer)}
 }
 const root=document.getElementById('app');
 let data, stageIndex=0, cursor=0, visible=[], waiting=false, session=null, syncTimer=null, applyingRemote=false;

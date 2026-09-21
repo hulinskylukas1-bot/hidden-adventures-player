@@ -50,6 +50,7 @@ function blockHTML(b){
  return `<div class="bubble"><div class="text">${esc(txt)}</div></div>`;
 }
 function appendBlock(b){
+ if(!state.seenBlockIds.includes(b.id))state.seenBlockIds.push(b.id);
  const feed=document.getElementById('feed');
  const st=data.stages?.[stageIndex];
  if(st?.internal_name?.toLowerCase().includes('nádvoří') && !document.getElementById('courtyardDiagram')){

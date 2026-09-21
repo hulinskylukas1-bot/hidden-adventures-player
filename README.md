@@ -1,9 +1,10 @@
-# Hidden Adventures Player v1.0.1
+# Hidden Adventures Player v1.0.2
 
-Oprava produkčního načítání:
-- autorizovaný obsah hry se vrací už v odpovědi start_or_resume_game,
-- Player už nemusí dělat druhý RPC požadavek po ověření kódu,
-- tím se odstranilo zaseknutí na „Načítám rozehranou hru…“,
-- při chybě se Player vrátí na zadání kódu a zobrazí konkrétní hlášku místo nekonečného čekání.
+Oprava načítání po zadání kódu:
+- ověření kódu a načtení obsahu teď probíhá přes samostatný serverový endpoint,
+- backend interně obnoví session a načte autorizovaný obsah,
+- Player dostane session i obsah v jedné odpovědi,
+- přidán 15s timeout a konkrétní chybové hlášky,
+- původní start_or_resume_game je vrácen do stabilní podoby z předchozí verze.
 
-Bezpečnostní model z v1.0 zůstává zachovaný: obsah dostane jen platná session a registrované zařízení.
+Bezpečnostní model zůstává zachovaný: obsah není veřejně dostupný bez platného kódu/session.

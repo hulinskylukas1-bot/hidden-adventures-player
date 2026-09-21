@@ -84,6 +84,42 @@ function resolveNextStageIndex(){
  }
  return -1;
 }
+function historyStageIndexes(){
+ const ids=Array.isArray(state.visitedStageIds)?state.visitedStageIds.filter(Boolean):[];
+ if(ids.length>1){
+   const arr=ids.map(id=>data.stages.findIndex(s=>s.id===id)).filter(i=>i>=0);
+   if(arr.length)return arr;
+ }
+ return Array.from({length:stageIndex+1},(_,i)=>i);
+}
+function renderFullHistory(targetCursor){
+ const originalStage=stageIndex;
+ const path=historyStageIndexes();
+ const feed=document.getElementById('feed');
+ if(feed)feed.innerHTML='';
+ for(const si of path){
+   const stage=data.stages[si]; if(!stage)continue;
+   const blocks=stage.blocks||[];
+   const max=si===originalStage?Math.min(targetCursor,blocks.length):blocks.length;
+   for(let bi=0;bi<max;bi++){
+     const b=blocks[bi];
+     if(b.block_type==='conditional_message'){
+       const required=b.config?.when?.choice;
+       if(required&&norm(required)!==norm(state.lastChoice))continue;
+     }
+     const savedStage=stageIndex; stageIndex=si;
+     appendBlock(b);
+     stageIndex=savedStage;
+     const last=document.querySelector('#feed .reveal:last-child');
+     if(interactive(b.block_type)){
+       if(state.solved?.[b.id])markSolvedUI(last,b);
+       else last?.querySelectorAll('button,input').forEach(x=>x.disabled=true);
+     }
+   }
+ }
+ stageIndex=originalStage;
+ cursor=Math.max(0,targetCursor);
+}
 function revealUntilStop(){
  const st=data.stages[stageIndex], blocks=st.blocks||[];
  document.getElementById('continueBar').classList.add('hidden');
@@ -225,7 +261,7 @@ async function applyRemoteProgress(force=false){
 
    shell();
    const target=cursor;
-   renderSavedUntil(target);
+   renderFullHistory(target);
 
    const blocks=data.stages[stageIndex].blocks||[];
    if(cursor<blocks.length){
@@ -254,7 +290,7 @@ function setupSync(){
  syncTimer=setInterval(()=>applyRemoteProgress(),900);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)applyRemoteProgress()},{passive:true});
 }
-function exitGame(){
+function clearLocalSession(){
  closeArchive();
  if(syncTimer){clearInterval(syncTimer);syncTimer=null}
  localStorage.removeItem(SESSION_KEY);
@@ -262,9 +298,46 @@ function exitGame(){
  state.lastChoice=null; state.choices={}; state.solved={}; state.responses={}; state.quizAnswers={}; state.progressStep=0; state.seenBlockIds=[]; state.visitedStageIds=[];
  entry();
 }
+function closeExitMenu(){
+ document.getElementById('exitOverlay')?.remove();
+}
+function exitGame(){
+ closeExitMenu();
+ const overlay=document.createElement('div');
+ overlay.id='exitOverlay';overlay.className='archiveOverlay';
+ overlay.innerHTML=`
+   <div class="exitPanel" role="dialog" aria-modal="true" aria-label="Ukončit hru">
+     <h2>Ukončit hru</h2>
+     <p>Chcete jen odejít a později pokračovat, nebo začít tento kód úplně od začátku?</p>
+     <div class="exitChoices">
+       <button id="leaveGame" class="btn secondary" type="button">Odejít a pokračovat později</button>
+       <button id="restartGame" class="btn danger" type="button">Začít znovu od začátku</button>
+       <button id="cancelExit" class="btn ghost" type="button">Zpět do hry</button>
+     </div>
+   </div>`;
+ document.body.appendChild(overlay);
+ overlay.addEventListener('click',e=>{if(e.target===overlay)closeExitMenu()});
+ document.getElementById('cancelExit').onclick=closeExitMenu;
+ document.getElementById('leaveGame').onclick=()=>{closeExitMenu();clearLocalSession()};
+ document.getElementById('restartGame').onclick=async()=>{
+   const btn=document.getElementById('restartGame'); btn.disabled=true; btn.textContent='Restartuji…';
+   try{
+     await resetRemoteProgress();
+     closeExitMenu();
+     localStorage.removeItem(SESSION_KEY);
+     const code=session?.code||'';
+     session=null;data=null;stageIndex=0;cursor=0;visible=[];waiting=false;
+     state.lastChoice=null;state.choices={};state.solved={};state.responses={};state.quizAnswers={};state.progressStep=0;state.seenBlockIds=[];state.visitedStageIds=[];
+     if(code)await boot(code); else entry();
+   }catch(e){
+     btn.disabled=false;btn.textContent='Začít znovu od začátku';
+     const p=overlay.querySelector('p'); if(p)p.textContent='Restart se nepodařil. Zkuste to znovu.';
+   }
+ };
+}
 async function boot(code){
  root.innerHTML=`<div class="shell"><div class="top"><div class="brand">HIDDEN ADVENTURES</div><button id="cancelLoad" class="exitGameBtn" type="button">Jiný kód</button></div><section class="case"><div class="casehead"><h1>Spiknutí</h1></div><div class="bubble">Načítám rozehranou hru…</div></section></div>`;
- const cancelLoad=document.getElementById('cancelLoad'); if(cancelLoad)cancelLoad.onclick=exitGame;
+ const cancelLoad=document.getElementById('cancelLoad'); if(cancelLoad)cancelLoad.onclick=clearLocalSession;
  const {data:ss,error:se}=await rpc('start_or_resume_game',{p_code:code,p_device_token:deviceToken}); if(se)throw se;
  session={...ss,code,revision:Number(ss.revision||0)}; localStorage.setItem(SESSION_KEY,JSON.stringify({token:ss.session_token,code}));
  const {data:d,error}=await rpc('get_game_preview',{p_slug:'spiknuti',p_locale:'cs'}); if(error)throw error; data=d;
@@ -272,7 +345,7 @@ async function boot(code){
  state.lastChoice=saved.lastChoice??null; state.choices=saved.choices||{}; state.solved=saved.solved||{}; state.responses=saved.responses||{}; state.quizAnswers=saved.quizAnswers||{};
  state.progressStep=Number(saved.progressStep||0); state.seenBlockIds=saved.seenBlockIds||[]; state.visitedStageIds=saved.visitedStageIds||[];
  const bootStageId=data.stages[stageIndex]?.id; if(bootStageId&&!state.visitedStageIds.includes(bootStageId))state.visitedStageIds.push(bootStageId);
- waiting=false; visible=[]; shell(); const target=cursor; renderSavedUntil(target); revealUntilStop(); setupSync();
+ waiting=false; visible=[]; shell(); const target=cursor; renderFullHistory(target); revealUntilStop(); setupSync();
 }
 function entry(){
  root.innerHTML=`<div class="shell"><section class="case"><div class="casehead"><h1>Spiknutí</h1></div><div class="bubble task"><div class="text">Zadejte kód hry</div><div class="answer"><input id="gameCode" value="" placeholder="Kód hry" autocomplete="off" autocapitalize="characters"><button id="startGame" class="btn">Vstoupit do hry</button></div><div id="entryError" class="result muted"></div></div></section></div>`;

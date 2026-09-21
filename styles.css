@@ -23,3 +23,8 @@
 .sortMoves{display:flex;gap:5px}
 .sortMoves button{width:34px;height:34px;border-radius:8px;border:1px solid #465049;background:#1b211e;color:#e8ebe4;font-size:18px;line-height:1;cursor:pointer}
 .sortingNote{margin:8px 0 12px}
+
+.topActions{display:flex;align-items:center;gap:10px}
+.exitGameBtn{background:transparent;color:#9aa29a;border:1px solid #333c37;border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer}
+.exitGameBtn:hover{color:#eef1ea;border-color:#59645d}
+@media(max-width:520px){.topActions{gap:7px}.exitGameBtn{padding:6px 8px;font-size:11px}}

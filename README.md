@@ -1,18 +1,9 @@
-# Hidden Adventures Player v1.0
+# Hidden Adventures Player v1.0.1
 
-Produkční základ Playeru.
+Oprava produkčního načítání:
+- autorizovaný obsah hry se vrací už v odpovědi start_or_resume_game,
+- Player už nemusí dělat druhý RPC požadavek po ověření kódu,
+- tím se odstranilo zaseknutí na „Načítám rozehranou hru…“,
+- při chybě se Player vrátí na zadání kódu a zobrazí konkrétní hlášku místo nekonečného čekání.
 
-Bezpečnostní změna:
-- obsah hry se už nenačítá přes veřejné preview podle slugu,
-- Player nejdřív ověří unikátní kód, vytvoří / obnoví session a zařízení,
-- celý obsah se následně vydá pouze přes session_token + device_token,
-- session je pevně svázaná s konkrétní game_version_id,
-- veřejný anonymní přístup k get_game_preview byl odebrán.
-
-Zachováno:
-- historie rozehrané hry,
-- restart / pokračování,
-- synchronizace zařízení,
-- archiv, GPS, fotodůkazy, nápovědy, větvení a více konců.
-
-Poznámka: Spiknutí je stále draft verze, takže testovací kódy dál fungují. Před skutečným prodejem bude potřeba publikovat finální verzi a napojit objednávku / platbu na vydání licence.
+Bezpečnostní model z v1.0 zůstává zachovaný: obsah dostane jen platná session a registrované zařízení.

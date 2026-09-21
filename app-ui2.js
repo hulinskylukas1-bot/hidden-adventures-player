@@ -340,7 +340,7 @@ async function boot(code){
  const cancelLoad=document.getElementById('cancelLoad'); if(cancelLoad)cancelLoad.onclick=clearLocalSession;
  const {data:ss,error:se}=await rpc('start_or_resume_game',{p_code:code,p_device_token:deviceToken}); if(se)throw se;
  session={...ss,code,revision:Number(ss.revision||0)}; localStorage.setItem(SESSION_KEY,JSON.stringify({token:ss.session_token,code}));
- const {data:d,error}=await rpc('get_game_preview',{p_slug:'spiknuti',p_locale:'cs'}); if(error)throw error; data=d;
+ const {data:d,error}=await rpc('get_session_game_content',{p_session_token:ss.session_token,p_device_token:deviceToken,p_locale:'cs'}); if(error)throw error; data=d;
  const saved=ss.state||{}; if(Number.isInteger(saved.stageIndex))stageIndex=Math.max(0,Math.min(saved.stageIndex,data.stages.length-1)); if(Number.isInteger(saved.cursor))cursor=Math.max(0,saved.cursor);
  state.lastChoice=saved.lastChoice??null; state.choices=saved.choices||{}; state.solved=saved.solved||{}; state.responses=saved.responses||{}; state.quizAnswers=saved.quizAnswers||{};
  state.progressStep=Number(saved.progressStep||0); state.seenBlockIds=saved.seenBlockIds||[]; state.visitedStageIds=saved.visitedStageIds||[];

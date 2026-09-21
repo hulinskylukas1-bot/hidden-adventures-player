@@ -136,8 +136,16 @@ function setupSync(){
  syncTimer=setInterval(()=>applyRemoteProgress(),900);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)applyRemoteProgress()},{passive:true});
 }
+function exitGame(){
+ if(syncTimer){clearInterval(syncTimer);syncTimer=null}
+ localStorage.removeItem(SESSION_KEY);
+ session=null; data=null; stageIndex=0; cursor=0; visible=[]; waiting=false;
+ state.lastChoice=null; state.choices={}; state.solved={}; state.responses={}; state.quizAnswers={};
+ entry();
+}
 async function boot(code){
- root.innerHTML=`<div class="shell"><section class="case"><div class="casehead"><h1>Spiknutí</h1></div><div class="bubble">Načítám rozehranou hru…</div></section></div>`;
+ root.innerHTML=`<div class="shell"><div class="top"><div class="brand">HIDDEN ADVENTURES</div><button id="cancelLoad" class="exitGameBtn" type="button">Jiný kód</button></div><section class="case"><div class="casehead"><h1>Spiknutí</h1></div><div class="bubble">Načítám rozehranou hru…</div></section></div>`;
+ const cancelLoad=document.getElementById('cancelLoad'); if(cancelLoad)cancelLoad.onclick=exitGame;
  const {data:ss,error:se}=await rpc('start_or_resume_game',{p_code:code,p_device_token:deviceToken}); if(se)throw se;
  session={...ss,code,revision:Number(ss.revision||0)}; localStorage.setItem(SESSION_KEY,JSON.stringify({token:ss.session_token,code}));
  const {data:d,error}=await rpc('get_game_preview',{p_slug:'spiknuti',p_locale:'cs'}); if(error)throw error; data=d;
@@ -146,7 +154,7 @@ async function boot(code){
  waiting=false; visible=[]; shell(); const target=cursor; renderSavedUntil(target); revealUntilStop(); setupSync();
 }
 function entry(){
- root.innerHTML=`<div class="shell"><section class="case"><div class="casehead"><h1>Spiknutí</h1></div><div class="bubble task"><div class="text">Zadejte kód hry</div><div class="answer"><input id="gameCode" value="TEST-SPIKNUTI" autocomplete="off"><button id="startGame" class="btn">Vstoupit do hry</button></div><div id="entryError" class="result muted"></div></div></section></div>`;
+ root.innerHTML=`<div class="shell"><section class="case"><div class="casehead"><h1>Spiknutí</h1></div><div class="bubble task"><div class="text">Zadejte kód hry</div><div class="answer"><input id="gameCode" value="" placeholder="Kód hry" autocomplete="off" autocapitalize="characters"><button id="startGame" class="btn">Vstoupit do hry</button></div><div id="entryError" class="result muted"></div></div></section></div>`;
  document.getElementById('startGame').onclick=async()=>{try{await boot(document.getElementById('gameCode').value)}catch(e){document.getElementById('entryError').textContent=e.message.includes('INVALID_GAME_CODE')?'Neplatný kód hry.':e.message.includes('DEVICE_LIMIT_REACHED')?'Tato hra už je připojena na maximálním počtu zařízení.':`Hru se nepodařilo otevřít: ${e.message}`}};
 }
 async function startup(){

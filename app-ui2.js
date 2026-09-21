@@ -51,6 +51,39 @@ function renderSavedUntil(target){
    cursor++;
  }
 }
+function conditionMatches(condition={}){
+ if(!condition || Object.keys(condition).length===0)return true;
+ const ch=condition.choice;
+ if(ch){
+   const actual=state.choices?.[ch.block_id];
+   if(Array.isArray(ch.one_of))return ch.one_of.some(v=>norm(v)===norm(actual));
+   if(Object.prototype.hasOwnProperty.call(ch,'equals'))return norm(actual)===norm(ch.equals);
+   if(Object.prototype.hasOwnProperty.call(ch,'not_equals'))return norm(actual)!==norm(ch.not_equals);
+ }
+ return false;
+}
+function outgoingTransitions(stageId){
+ return (data.transitions||[])
+   .filter(t=>t.from_stage_id===stageId)
+   .sort((a,b)=>{
+     const ap=Number(a.priority||0),bp=Number(b.priority||0);
+     if(bp!==ap)return bp-ap;
+     const ac=a.condition&&Object.keys(a.condition).length?1:0;
+     const bc=b.condition&&Object.keys(b.condition).length?1:0;
+     return bc-ac;
+   });
+}
+function resolveNextStageIndex(){
+ const current=data.stages[stageIndex];
+ if(!current)return -1;
+ const outgoing=outgoingTransitions(current.id);
+ for(const t of outgoing){
+   if(!conditionMatches(t.condition||{}))continue;
+   const idx=data.stages.findIndex(s=>s.id===t.to_stage_id);
+   if(idx>=0)return idx;
+ }
+ return -1;
+}
 function revealUntilStop(){
  const st=data.stages[stageIndex], blocks=st.blocks||[];
  document.getElementById('continueBar').classList.add('hidden');
@@ -65,32 +98,36 @@ function revealUntilStop(){
    cursor++;
  }
  document.getElementById('continueBar').classList.remove('hidden');
- document.getElementById('continueBtn').textContent=stageIndex<(data.stages.length-1)?'Pokračovat':'Dokončit ukázku';
+ const nextStage=resolveNextStageIndex();
+ document.getElementById('continueBtn').textContent=nextStage>=0?'Pokračovat':'Dokončit hru';
 }
 async function advance(){
  if(waiting)return;
- if(stageIndex<data.stages.length-1){
-   const nextStage=stageIndex+1;
+ const nextStage=resolveNextStageIndex();
+ if(nextStage>=0){
    try{
-     await persistProgress(null,'stage_advance',{from_stage:stageIndex,to_stage:nextStage},nextStage,0);
+     await persistProgress(null,'stage_advance',{
+       from_stage_id:data.stages[stageIndex].id,
+       to_stage_id:data.stages[nextStage].id,
+       from_stage_index:stageIndex,
+       to_stage_index:nextStage
+     },nextStage,0);
      stageIndex=nextStage;cursor=0;visible=[];waiting=false;
      document.querySelector('.progress').textContent=`${stageIndex+1} / ${data.stages.length}`;
      revealUntilStop();
    }catch(e){showSyncNotice('Nepodařilo se uložit přesun. Zkuste znovu.')}
- } else alert('Konec aktuální ukázky Spiknutí.');
+ } else {
+   alert('Konec hry.');
+ }
 }
 
 
 function discoveredDocuments(){
+ const seen=new Set(state.seenBlockIds||[]);
  const out=[];
- const stages=data?.stages||[];
- for(let si=0;si<stages.length;si++){
-   if(si>stageIndex)break;
-   const blocks=stages[si].blocks||[];
-   const max=si<stageIndex?blocks.length:Math.min(cursor,blocks.length);
-   for(let bi=0;bi<max;bi++){
-     const b=blocks[bi];
-     if(b.block_type==='document'){
+ for(const stage of (data?.stages||[])){
+   for(const b of (stage.blocks||[])){
+     if(b.block_type==='document'&&seen.has(b.id)){
        const text=main(b.content||{});
        if(text)out.push({id:b.id,text});
      }
@@ -177,6 +214,9 @@ async function applyRemoteProgress(force=false){
    state.solved=rs.solved||state.solved;
    state.responses=rs.responses||state.responses;
    state.quizAnswers=rs.quizAnswers||state.quizAnswers;
+   state.progressStep=Number(rs.progressStep??state.progressStep??0);
+   state.seenBlockIds=rs.seenBlockIds||state.seenBlockIds;
+   state.visitedStageIds=rs.visitedStageIds||state.visitedStageIds;
 
    stageIndex=Math.max(0,Math.min(remoteStage,data.stages.length-1));
    cursor=Math.max(0,remoteCursor);
@@ -219,7 +259,7 @@ function exitGame(){
  if(syncTimer){clearInterval(syncTimer);syncTimer=null}
  localStorage.removeItem(SESSION_KEY);
  session=null; data=null; stageIndex=0; cursor=0; visible=[]; waiting=false;
- state.lastChoice=null; state.choices={}; state.solved={}; state.responses={}; state.quizAnswers={};
+ state.lastChoice=null; state.choices={}; state.solved={}; state.responses={}; state.quizAnswers={}; state.progressStep=0; state.seenBlockIds=[]; state.visitedStageIds=[];
  entry();
 }
 async function boot(code){
@@ -230,6 +270,8 @@ async function boot(code){
  const {data:d,error}=await rpc('get_game_preview',{p_slug:'spiknuti',p_locale:'cs'}); if(error)throw error; data=d;
  const saved=ss.state||{}; if(Number.isInteger(saved.stageIndex))stageIndex=Math.max(0,Math.min(saved.stageIndex,data.stages.length-1)); if(Number.isInteger(saved.cursor))cursor=Math.max(0,saved.cursor);
  state.lastChoice=saved.lastChoice??null; state.choices=saved.choices||{}; state.solved=saved.solved||{}; state.responses=saved.responses||{}; state.quizAnswers=saved.quizAnswers||{};
+ state.progressStep=Number(saved.progressStep||0); state.seenBlockIds=saved.seenBlockIds||[]; state.visitedStageIds=saved.visitedStageIds||[];
+ const bootStageId=data.stages[stageIndex]?.id; if(bootStageId&&!state.visitedStageIds.includes(bootStageId))state.visitedStageIds.push(bootStageId);
  waiting=false; visible=[]; shell(); const target=cursor; renderSavedUntil(target); revealUntilStop(); setupSync();
 }
 function entry(){

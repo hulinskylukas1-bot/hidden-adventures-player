@@ -42,6 +42,7 @@ function blockHTML(b){
    const items=Array.isArray(cfg.items)?cfg.items:[];
    const pending=!Array.isArray(cfg.correct_order)||!cfg.correct_order.length;
    return `<div class="bubble task sorting" data-id="${b.id}"><div class="text">${esc(txt)}</div>${sortingRows(items)}<div class="sortingNote muted">${pending?'Správné pořadí zatím není v administraci potvrzené. Pro test lze pořadí uložit a pokračovat.':'Seřaďte položky a ověřte pořadí.'}</div><button class="btn sortCheck">${pending?'Uložit pořadí a pokračovat':'Ověřit pořadí'}</button><div class="result muted"></div>${hintHTML(b)}</div>`;
+ }
  return `<div class="bubble"><div class="text">${esc(txt)}</div></div>`;
 }
 function appendBlock(b){

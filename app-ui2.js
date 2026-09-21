@@ -338,9 +338,26 @@ function exitGame(){
 async function boot(code){
  root.innerHTML=`<div class="shell"><div class="top"><div class="brand">HIDDEN ADVENTURES</div><button id="cancelLoad" class="exitGameBtn" type="button">Jiný kód</button></div><section class="case"><div class="casehead"><h1>Spiknutí</h1></div><div class="bubble">Načítám rozehranou hru…</div></section></div>`;
  const cancelLoad=document.getElementById('cancelLoad'); if(cancelLoad)cancelLoad.onclick=clearLocalSession;
- const {data:ss,error:se}=await rpc('start_or_resume_game',{p_code:code,p_device_token:deviceToken}); if(se)throw se;
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),15000);
+ let payload;
+ try{
+   const res=await fetch(`${SUPABASE_URL}/functions/v1/start-player-session`,{
+     method:'POST',
+     headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},
+     body:JSON.stringify({code,p_device_token:undefined,device_token:deviceToken}),
+     signal:controller.signal
+   });
+   const txt=await res.text();
+   try{payload=txt?JSON.parse(txt):null}catch{payload={message:txt}}
+   if(!res.ok||!payload?.ok)throw new Error(payload?.error||payload?.message||`HTTP ${res.status}`);
+ }catch(e){
+   if(e?.name==='AbortError')throw new Error('START_TIMEOUT');
+   throw e;
+ }finally{clearTimeout(timer)}
+ const ss=payload.session;
  session={...ss,code,revision:Number(ss.revision||0)}; localStorage.setItem(SESSION_KEY,JSON.stringify({token:ss.session_token,code}));
- data=ss.content; if(!data?.stages)throw new Error('GAME_CONTENT_UNAVAILABLE');
+ data=payload.content; if(!data?.stages)throw new Error('GAME_CONTENT_UNAVAILABLE');
  const saved=ss.state||{}; if(Number.isInteger(saved.stageIndex))stageIndex=Math.max(0,Math.min(saved.stageIndex,data.stages.length-1)); if(Number.isInteger(saved.cursor))cursor=Math.max(0,saved.cursor);
  state.lastChoice=saved.lastChoice??null; state.choices=saved.choices||{}; state.solved=saved.solved||{}; state.responses=saved.responses||{}; state.quizAnswers=saved.quizAnswers||{};
  state.progressStep=Number(saved.progressStep||0); state.seenBlockIds=saved.seenBlockIds||[]; state.visitedStageIds=saved.visitedStageIds||[];
@@ -357,7 +374,7 @@ function entry(){
    }catch(e){
      entry();
      const box=document.getElementById('entryError');
-     if(box)box.textContent=e.message.includes('INVALID_GAME_CODE')?'Neplatný kód hry.':e.message.includes('DEVICE_LIMIT_REACHED')?'Tato hra už je připojena na maximálním počtu zařízení.':e.message.includes('GAME_CONTENT_UNAVAILABLE')?'Obsah hry se nepodařilo načíst. Zkuste to znovu.':`Hru se nepodařilo otevřít: ${e.message}`;
+     if(box)box.textContent=e.message.includes('INVALID_GAME_CODE')?'Neplatný kód hry.':e.message.includes('DEVICE_LIMIT_REACHED')?'Tato hra už je připojena na maximálním počtu zařízení.':e.message.includes('GAME_CONTENT_UNAVAILABLE')?'Obsah hry se nepodařilo načíst. Zkuste to znovu.':e.message.includes('START_TIMEOUT')?'Načítání trvalo příliš dlouho. Zkuste to znovu.':`Hru se nepodařilo otevřít: ${e.message}`;
    }
  };
 }

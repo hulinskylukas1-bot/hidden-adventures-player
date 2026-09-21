@@ -160,3 +160,13 @@ async function getEvidenceSignedUrl(evidenceId){
  if(!res.ok||!body?.ok)throw new Error(body?.message||body?.error||`HTTP ${res.status}`);
  return body;
 }
+
+async function resetRemoteProgress(){
+ if(!session?.session_token)throw new Error('Session není aktivní.');
+ const {data:result,error}=await rpc('reset_game_progress',{
+   p_session_token:session.session_token,
+   p_device_token:deviceToken
+ });
+ if(error)throw error;
+ return result;
+}

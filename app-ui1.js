@@ -6,31 +6,42 @@ function shell(){
  document.getElementById('continueBtn').onclick=advance;
 }
 
+function hintHTML(b){
+ const cfg=b.config||{},c=b.content||{};
+ const hints=Array.isArray(cfg.hints)?cfg.hints:(Array.isArray(c.hints)?c.hints:[]);
+ if(!hints.length)return '';
+ return `<div class="hintbox" data-count="0"><button class="btn secondary hintBtn">Nápověda</button><div class="hintList"></div></div>`;
+}
+function sortingRows(items){
+ return `<div class="sortList">${items.map((item,i)=>`<div class="sortRow" data-value="${esc(item)}"><span class="sortHandle">☰</span><span class="sortText">${esc(item)}</span><span class="sortMoves"><button type="button" class="sortUp" aria-label="Posunout nahoru">↑</button><button type="button" class="sortDown" aria-label="Posunout dolů">↓</button></span></div>`).join('')}</div>`;
+}
 function blockHTML(b){
  const c=b.content||{},cfg=b.config||{},t=b.block_type,txt=main(c);
  if(t==='conditional_message'||t==='narrator_message') return `<div class="bubble narrator"><div class="text">${esc(txt)}</div></div>`;
  if(t==='instruction') return `<div class="bubble instruction"><div class="text">${esc(txt)}</div></div>`;
  if(t==='document') return `<div class="bubble"><div class="doc text">${esc(txt)}</div></div>`;
  if(t==='image') return `<div class="bubble">${cfg.url||cfg.storage_path?`<img src="${esc(cfg.url||cfg.storage_path)}" class="media">`:`<div class="placeholder">Obrázek zatím není nahraný.</div>`}</div>`;
- if(t==='confirm') return `<div class="bubble task" data-id="${b.id}"><div class="text">${esc(txt)}</div><button class="btn confirmbtn">${esc(cfg.button_label||'Pokračovat')}</button></div>`;
+ if(t==='confirm') return `<div class="bubble task" data-id="${b.id}"><div class="text">${esc(txt)}</div><button class="btn confirmbtn">${esc(cfg.button_label||'Pokračovat')}</button>${hintHTML(b)}</div>`;
  if(t==='text_answer'||t==='multi_term_answer'){
-   const isMask=Array.isArray(cfg.answers)&&cfg.answers.some(a=>norm(a)==='akantart 2022 geosan');
-   const placeholder=isMask?'-------- ---- & ------':'Napište odpověď';
-   return `<div class="bubble task" data-id="${b.id}"><div class="text">${esc(txt)}</div><div class="answer"><input placeholder="${placeholder}" autocomplete="off"><button class="btn check">Potvrdit</button></div><div class="result muted"></div></div>`;
+   const placeholder=c.placeholder||cfg.placeholder||'Napište odpověď';
+   return `<div class="bubble task" data-id="${b.id}"><div class="text">${esc(txt)}</div><div class="answer"><input placeholder="${esc(placeholder)}" autocomplete="off"><button class="btn check">Potvrdit</button></div><div class="result muted"></div>${hintHTML(b)}</div>`;
  }
  if(t==='choice') {
    const opts=Array.isArray(cfg.options)?cfg.options:[];
-   return `<div class="bubble task" data-id="${b.id}"><div class="text">${esc(txt)}</div><div class="choices">${opts.map((o,i)=>{let v=typeof o==='string'?o:(o.id??o.value??o.text??o.label??i),lab=typeof o==='string'?o:(o.text??o.label??String(v));return `<button class="btn secondary choice" data-value="${esc(v)}">${esc(lab)}</button>`}).join('')}</div><div class="result muted"></div></div>`;
+   return `<div class="bubble task" data-id="${b.id}"><div class="text">${esc(txt)}</div><div class="choices">${opts.map((o,i)=>{let v=typeof o==='string'?o:(o.id??o.value??o.text??o.label??i),lab=typeof o==='string'?o:(o.text??o.label??String(v));return `<button class="btn secondary choice" data-value="${esc(v)}">${esc(lab)}</button>`}).join('')}</div><div class="result muted"></div>${hintHTML(b)}</div>`;
  }
  if(t==='quiz'){
    const qs=Array.isArray(cfg.questions)?cfg.questions:[];
-   if(qs.length) return `<div class="bubble task quizbox" data-id="${b.id}"><div class="quizQuestions">${qs.map((q,qi)=>`<div class="quizq" data-q="${qi}"><div class="text"><b>${qi+1}.</b> ${esc(q.question||'')}</div><div class="choices">${(q.options||[]).map((o,oi)=>`<button class="btn secondary quizopt" data-q="${qi}" data-i="${oi}">${esc(o)}</button>`).join('')}</div><div class="result muted"></div></div>`).join('')}</div></div>`;
+   if(qs.length) return `<div class="bubble task quizbox" data-id="${b.id}"><div class="quizQuestions">${qs.map((q,qi)=>`<div class="quizq" data-q="${qi}"><div class="text"><b>${qi+1}.</b> ${esc(q.question||'')}</div><div class="choices">${(q.options||[]).map((o,oi)=>`<button class="btn secondary quizopt" data-q="${qi}" data-i="${oi}">${esc(o)}</button>`).join('')}</div><div class="result muted"></div></div>`).join('')}</div>${hintHTML(b)}</div>`;
    const opts=Array.isArray(cfg.options)?cfg.options:[];
-   return `<div class="bubble task" data-id="${b.id}"><div class="text">${esc(txt)}</div><div class="choices">${opts.map((o,i)=>`<button class="btn secondary choice" data-value="${i}">${esc(typeof o==='string'?o:(o.label??o.text??i))}</button>`).join('')}</div><div class="result muted"></div></div>`;
+   return `<div class="bubble task" data-id="${b.id}"><div class="text">${esc(txt)}</div><div class="choices">${opts.map((o,i)=>`<button class="btn secondary choice" data-value="${i}">${esc(typeof o==='string'?o:(o.label??o.text??i))}</button>`).join('')}</div><div class="result muted"></div>${hintHTML(b)}</div>`;
  }
- if(t==='gps'||t==='gps_confirmation') return `<div class="bubble gps" data-id="${b.id}"><div class="text">${esc(txt)}</div><button class="btn gpsbtn">JSME TU</button><div class="result muted"></div></div>`;
- if(t==='photo') return `<div class="bubble photo" data-id="${b.id}"><div class="text">${esc(txt)}</div><label class="btn secondary photoPick">Vyfotit / vybrat fotografii<input class="photoInput" type="file" accept="image/*,.heic,.heif" capture="environment" hidden></label><div class="photoPreview"></div><div class="result muted"></div></div>`;
- if(t==='sorting') return `<div class="bubble task sorting"><div class="text">${esc(txt)}</div><div class="placeholder">Interaktivní řazení bude doplněno.</div><button class="btn simulated">Dočasně pokračovat</button></div>`;
+ if(t==='gps'||t==='gps_confirmation') return `<div class="bubble gps" data-id="${b.id}"><div class="text">${esc(txt)}</div><button class="btn gpsbtn">JSME TU</button><div class="result muted"></div>${hintHTML(b)}</div>`;
+ if(t==='photo') return `<div class="bubble photo" data-id="${b.id}"><div class="text">${esc(txt)}</div><label class="btn secondary photoPick">Vyfotit / vybrat fotografii<input class="photoInput" type="file" accept="image/*,.heic,.heif" capture="environment" hidden></label><div class="photoPreview"></div><div class="result muted"></div>${hintHTML(b)}</div>`;
+ if(t==='sorting'){
+   const items=Array.isArray(cfg.items)?cfg.items:[];
+   const pending=!Array.isArray(cfg.correct_order)||!cfg.correct_order.length;
+   return `<div class="bubble task sorting" data-id="${b.id}"><div class="text">${esc(txt)}</div>${sortingRows(items)}<div class="sortingNote muted">${pending?'Správné pořadí zatím není v administraci potvrzené. Pro test lze pořadí uložit a pokračovat.':'Seřaďte položky a ověřte pořadí.'}</div><button class="btn sortCheck">${pending?'Uložit pořadí a pokračovat':'Ověřit pořadí'}</button><div class="result muted"></div>${hintHTML(b)}</div>`;
  return `<div class="bubble"><div class="text">${esc(txt)}</div></div>`;
 }
 function appendBlock(b){
@@ -57,6 +68,19 @@ function unlock(){
 }
 function bindBlock(w,b){
  const cfg=b.config||{};
+ const hintBtn=w.querySelector('.hintBtn');
+ if(hintBtn) hintBtn.onclick=async()=>{
+   const hints=Array.isArray(cfg.hints)?cfg.hints:(Array.isArray(b.content?.hints)?b.content.hints:[]);
+   const box=w.querySelector('.hintbox'),list=w.querySelector('.hintList');
+   let count=Number(box?.dataset.count||0);
+   if(count>=hints.length)return;
+   const h=hints[count],txt=typeof h==='string'?h:(h.text||h.content||'');
+   const el=document.createElement('div');el.className='hintItem';el.textContent=txt;list.appendChild(el);
+   count++;box.dataset.count=String(count);
+   hintBtn.textContent=count<hints.length?`Další nápověda (${count}/${hints.length})`:'Nápovědy vyčerpány';
+   if(count>=hints.length)hintBtn.disabled=true;
+   try{await persistProgress(b,'hint_used',{hint_index:count-1},stageIndex,cursor,false,false)}catch{}
+ };
  const check=w.querySelector('.check');
  if(check) check.onclick=()=>{
    const val=w.querySelector('input').value, answers=cfg.answers||cfg.accepted_answers||[];
@@ -194,5 +218,32 @@ function bindBlock(w,b){
      label.classList.remove('disabled');photo.value='';
    }
  };
- const sim=w.querySelector('.simulated'); if(sim)sim.onclick=()=>{sim.disabled=true;persistProgress(b,'sorting_bypass',{}).then(r=>{if(r.accepted!==false)unlock()})};
+ const sortList=w.querySelector('.sortList'),sortCheck=w.querySelector('.sortCheck');
+ if(sortList&&sortCheck){
+   const rows=()=>[...sortList.querySelectorAll('.sortRow')];
+   const move=(row,dir)=>{
+     if(dir<0&&row.previousElementSibling)sortList.insertBefore(row,row.previousElementSibling);
+     if(dir>0&&row.nextElementSibling)sortList.insertBefore(row.nextElementSibling,row);
+   };
+   sortList.querySelectorAll('.sortUp').forEach(btn=>btn.onclick=()=>move(btn.closest('.sortRow'),-1));
+   sortList.querySelectorAll('.sortDown').forEach(btn=>btn.onclick=()=>move(btn.closest('.sortRow'),1));
+   sortCheck.onclick=async()=>{
+     const order=rows().map(r=>r.dataset.value);
+     const correct=Array.isArray(cfg.correct_order)?cfg.correct_order:null;
+     const resultBox=w.querySelector('.result');
+     if(correct&&correct.length){
+       const ok=order.length===correct.length&&order.every((x,i)=>norm(x)===norm(correct[i]));
+       if(!ok){resultBox.textContent='Pořadí zatím není správně. Zkuste to znovu.';w.classList.add('bad');setTimeout(()=>w.classList.remove('bad'),250);return}
+       resultBox.textContent='Správně.';
+       sortCheck.disabled=true;w.classList.add('solved');
+       const saved=await persistProgress(b,'sorting_complete',{order});
+       if(saved.accepted!==false)unlock();
+     }else{
+       resultBox.textContent='Pořadí bylo uloženo pro test. Finální správné pořadí ještě není potvrzené.';
+       sortCheck.disabled=true;w.classList.add('solved');
+       const saved=await persistProgress(b,'sorting_draft_complete',{order,pending_validation:true});
+       if(saved.accepted!==false)unlock();
+     }
+   };
+ }
 }

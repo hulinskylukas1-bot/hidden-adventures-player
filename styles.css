@@ -48,3 +48,8 @@
 .evidenceMedia{margin-top:12px}.archivePhoto{display:block;width:100%;max-height:55vh;object-fit:contain;border-radius:10px;background:#080a09}
 @media(min-width:700px){.archiveOverlay{align-items:center}.archivePanel{max-height:82vh}}
 @media(max-width:520px){.archiveBtn,.exitGameBtn{padding:6px 7px;font-size:11px}.topActions{gap:5px}}
+
+/* v0.9.1 exit/restart */
+.exitPanel{width:min(520px,100%);background:#0f1311;border:1px solid #333b37;border-radius:18px;padding:22px;box-shadow:0 28px 90px #000b}
+.exitPanel h2{font-family:Georgia,serif;font-size:28px;margin:0 0 10px}.exitPanel p{color:#aab2aa;line-height:1.55;margin:0 0 18px}
+.exitChoices{display:grid;gap:10px}.btn.danger{background:#7e2f2f;color:#fff}.btn.ghost{background:transparent;color:#abb4ac;border:1px solid #303833}

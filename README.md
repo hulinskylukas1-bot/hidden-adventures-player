@@ -1,10 +1,9 @@
-# Hidden Adventures Player v1.0.2
+# Hidden Adventures Player v1.0.3
 
-Oprava načítání po zadání kódu:
-- ověření kódu a načtení obsahu teď probíhá přes samostatný serverový endpoint,
-- backend interně obnoví session a načte autorizovaný obsah,
-- Player dostane session i obsah v jedné odpovědi,
-- přidán 15s timeout a konkrétní chybové hlášky,
-- původní start_or_resume_game je vrácen do stabilní podoby z předchozí verze.
+Úprava ukončení hry:
+- „Uložit hru pro možnost návratu“ ponechá postup na serveru a vrátí hráče na zadání kódu.
+- „Neukládat hru“ smaže herní postup této session na serveru a vrátí hráče na zadání kódu.
+- „Zrušit ukončení“ zavře dialog a hráč pokračuje ve hře.
+- Ani jedna z prvních dvou voleb už hráče automaticky nepustí zpět do hry bez nového zadání kódu.
 
-Bezpečnostní model zůstává zachovaný: obsah není veřejně dostupný bez platného kódu/session.
+Ostatní funkce v1.0.2 zůstávají beze změny.

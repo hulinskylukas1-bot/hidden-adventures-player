@@ -1,9 +1,18 @@
-# Hidden Adventures Player v0.9.1
+# Hidden Adventures Player v1.0
 
-Opravy navazující na v0.9:
-- po obnovení session se znovu vykreslí dosavadní historie konverzace, ne jen aktuální poslední část,
-- u starších lineárních testovacích session bez uložené historie se historie zpětně dopočítá z předchozích částí,
-- „Ukončit hru“ nově rozlišuje mezi odchodem s možností pozdějšího pokračování a skutečným restartem stejného kódu od začátku,
-- restart vyčistí herní postup na serveru, takže stejné zařízení i další synchronizovaná zařízení dostanou nový začátek.
+Produkční základ Playeru.
 
-Archiv, větvení, GPS, fotodůkazy a synchronizace zůstávají zachované.
+Bezpečnostní změna:
+- obsah hry se už nenačítá přes veřejné preview podle slugu,
+- Player nejdřív ověří unikátní kód, vytvoří / obnoví session a zařízení,
+- celý obsah se následně vydá pouze přes session_token + device_token,
+- session je pevně svázaná s konkrétní game_version_id,
+- veřejný anonymní přístup k get_game_preview byl odebrán.
+
+Zachováno:
+- historie rozehrané hry,
+- restart / pokračování,
+- synchronizace zařízení,
+- archiv, GPS, fotodůkazy, nápovědy, větvení a více konců.
+
+Poznámka: Spiknutí je stále draft verze, takže testovací kódy dál fungují. Před skutečným prodejem bude potřeba publikovat finální verzi a napojit objednávku / platbu na vydání licence.

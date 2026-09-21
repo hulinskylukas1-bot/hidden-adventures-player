@@ -308,30 +308,29 @@ function exitGame(){
  overlay.innerHTML=`
    <div class="exitPanel" role="dialog" aria-modal="true" aria-label="Ukončit hru">
      <h2>Ukončit hru</h2>
-     <p>Chcete jen odejít a později pokračovat, nebo začít tento kód úplně od začátku?</p>
+     <p>Vyberte, co se má stát s rozehraným postupem.</p>
      <div class="exitChoices">
-       <button id="leaveGame" class="btn secondary" type="button">Odejít a pokračovat později</button>
-       <button id="restartGame" class="btn danger" type="button">Začít znovu od začátku</button>
-       <button id="cancelExit" class="btn ghost" type="button">Zpět do hry</button>
+       <button id="saveAndLeave" class="btn secondary" type="button">Uložit hru pro možnost návratu</button>
+       <button id="discardAndLeave" class="btn danger" type="button">Neukládat hru</button>
+       <button id="cancelExit" class="btn ghost" type="button">Zrušit ukončení</button>
      </div>
    </div>`;
  document.body.appendChild(overlay);
  overlay.addEventListener('click',e=>{if(e.target===overlay)closeExitMenu()});
  document.getElementById('cancelExit').onclick=closeExitMenu;
- document.getElementById('leaveGame').onclick=()=>{closeExitMenu();clearLocalSession()};
- document.getElementById('restartGame').onclick=async()=>{
-   const btn=document.getElementById('restartGame'); btn.disabled=true; btn.textContent='Restartuji…';
+ document.getElementById('saveAndLeave').onclick=()=>{
+   closeExitMenu();
+   clearLocalSession();
+ };
+ document.getElementById('discardAndLeave').onclick=async()=>{
+   const btn=document.getElementById('discardAndLeave'); btn.disabled=true; btn.textContent='Mažu postup…';
    try{
      await resetRemoteProgress();
      closeExitMenu();
-     localStorage.removeItem(SESSION_KEY);
-     const code=session?.code||'';
-     session=null;data=null;stageIndex=0;cursor=0;visible=[];waiting=false;
-     state.lastChoice=null;state.choices={};state.solved={};state.responses={};state.quizAnswers={};state.progressStep=0;state.seenBlockIds=[];state.visitedStageIds=[];
-     if(code)await boot(code); else entry();
+     clearLocalSession();
    }catch(e){
-     btn.disabled=false;btn.textContent='Začít znovu od začátku';
-     const p=overlay.querySelector('p'); if(p)p.textContent='Restart se nepodařil. Zkuste to znovu.';
+     btn.disabled=false;btn.textContent='Neukládat hru';
+     const p=overlay.querySelector('p'); if(p)p.textContent='Postup se nepodařilo smazat. Zkuste to znovu.';
    }
  };
 }

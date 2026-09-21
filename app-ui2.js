@@ -80,6 +80,84 @@ async function advance(){
  } else alert('Konec aktuální ukázky Spiknutí.');
 }
 
+
+function discoveredDocuments(){
+ const out=[];
+ const stages=data?.stages||[];
+ for(let si=0;si<stages.length;si++){
+   if(si>stageIndex)break;
+   const blocks=stages[si].blocks||[];
+   const max=si<stageIndex?blocks.length:Math.min(cursor,blocks.length);
+   for(let bi=0;bi<max;bi++){
+     const b=blocks[bi];
+     if(b.block_type==='document'){
+       const text=main(b.content||{});
+       if(text)out.push({id:b.id,text});
+     }
+   }
+ }
+ return out;
+}
+function archiveEvidenceItems(){
+ const photos=[],gps=[];
+ for(const [blockId,resp] of Object.entries(state.responses||{})){
+   if(resp?.kind==='photo'&&resp.value?.evidence_id)photos.push({blockId,...resp.value});
+   if(resp?.kind==='gps')gps.push({blockId,...(resp.value||{})});
+ }
+ return {photos,gps};
+}
+function closeArchive(){
+ const el=document.getElementById('archiveOverlay');
+ if(el)el.remove();
+}
+async function openArchive(){
+ closeArchive();
+ const docs=discoveredDocuments(), ev=archiveEvidenceItems();
+ const overlay=document.createElement('div');
+ overlay.id='archiveOverlay'; overlay.className='archiveOverlay';
+ overlay.innerHTML=`
+   <div class="archivePanel" role="dialog" aria-modal="true" aria-label="Archiv důkazů">
+     <div class="archiveHead">
+       <div><div class="archiveKicker">HIDDEN ADVENTURES</div><h2>Archiv</h2></div>
+       <button class="archiveClose" type="button" aria-label="Zavřít archiv">×</button>
+     </div>
+     <div class="archiveTabs">
+       <button class="archiveTab active" data-tab="docs">Dokumenty <span>${docs.length}</span></button>
+       <button class="archiveTab" data-tab="evidence">Důkazy <span>${ev.photos.length+ev.gps.length}</span></button>
+     </div>
+     <div class="archiveBody">
+       <div class="archiveSection" data-section="docs">
+         ${docs.length?docs.map((d,i)=>`<article class="archiveCard documentCard"><div class="archiveCardLabel">Dokument ${i+1}</div><div class="archiveDocText">${esc(d.text)}</div></article>`).join(''):`<div class="archiveEmpty">Zatím jste neobjevili žádný dokument.</div>`}
+       </div>
+       <div class="archiveSection hidden" data-section="evidence">
+         ${ev.photos.map((p,i)=>`<article class="archiveCard evidenceCard photoEvidence" data-evidence-id="${esc(p.evidence_id)}"><div class="archiveCardLabel">Fotodůkaz ${i+1}</div><button class="btn secondary viewEvidence" type="button">Zobrazit fotografii</button><div class="evidenceMedia"></div></article>`).join('')}
+         ${ev.gps.map((g,i)=>`<article class="archiveCard evidenceCard"><div class="archiveCardLabel">Poloha ${i+1}</div><div class="archiveEvidenceText">${g.validated===true?'Poloha byla potvrzena.':'Poloha byla zaznamenána.'}${Number.isFinite(Number(g.accuracy_m))?` Přesnost cca ${Math.round(Number(g.accuracy_m))} m.`:''}</div></article>`).join('')}
+         ${(!ev.photos.length&&!ev.gps.length)?`<div class="archiveEmpty">Zatím nemáte uložený žádný důkaz.</div>`:''}
+       </div>
+     </div>
+   </div>`;
+ document.body.appendChild(overlay);
+ overlay.querySelector('.archiveClose').onclick=closeArchive;
+ overlay.addEventListener('click',e=>{if(e.target===overlay)closeArchive()});
+ overlay.querySelectorAll('.archiveTab').forEach(btn=>btn.onclick=()=>{
+   overlay.querySelectorAll('.archiveTab').forEach(x=>x.classList.toggle('active',x===btn));
+   overlay.querySelectorAll('.archiveSection').forEach(sec=>sec.classList.toggle('hidden',sec.dataset.section!==btn.dataset.tab));
+ });
+ overlay.querySelectorAll('.viewEvidence').forEach(btn=>btn.onclick=async()=>{
+   const card=btn.closest('.photoEvidence'),box=card.querySelector('.evidenceMedia'),id=card.dataset.evidenceId;
+   btn.disabled=true;btn.textContent='Načítám…';
+   try{
+     const signed=await getEvidenceSignedUrl(id);
+     box.innerHTML=`<img class="archivePhoto" alt="Fotodůkaz" src="${esc(signed.signed_url)}">`;
+     btn.textContent='Obnovit fotografii';
+     btn.disabled=false;
+   }catch(e){
+     box.textContent='Fotografii se nepodařilo načíst.';
+     btn.textContent='Zkusit znovu';btn.disabled=false;
+   }
+ });
+}
+
 async function applyRemoteProgress(force=false){
  if(!session||applyingRemote||!data)return;
  applyingRemote=true;
@@ -137,6 +215,7 @@ function setupSync(){
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)applyRemoteProgress()},{passive:true});
 }
 function exitGame(){
+ closeArchive();
  if(syncTimer){clearInterval(syncTimer);syncTimer=null}
  localStorage.removeItem(SESSION_KEY);
  session=null; data=null; stageIndex=0; cursor=0; visible=[]; waiting=false;

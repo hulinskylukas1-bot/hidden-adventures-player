@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b0d10">
+  <title>Spiknutí · Testovací objednávka</title>
+  <link rel="stylesheet" href="purchase.css?v=1">
+</head>
+<body>
+<main class="wrap">
+  <header class="brand">HIDDEN ADVENTURES</header>
+  <section class="card">
+    <div class="eyebrow">TESTOVACÍ CHECKOUT</div>
+    <h1>Spiknutí</h1>
+    <p class="lead">Tahle stránka simuluje budoucí nákup hry. Skutečné peníze se nyní neúčtují.</p>
+
+    <div class="summary">
+      <div><span>Hra</span><strong>Spiknutí</strong></div>
+      <div><span>Cena</span><strong>Cena bude doplněna</strong></div>
+      <div><span>Platba</span><strong>Testovací režim</strong></div>
+    </div>
+
+    <form id="orderForm">
+      <label>Jméno
+        <input id="name" name="name" autocomplete="name" placeholder="Jan Novák">
+      </label>
+      <label>E-mail
+        <input id="email" name="email" type="email" autocomplete="email" required placeholder="jan@example.cz">
+      </label>
+      <button class="btn primary" type="submit">Pokračovat k testovací platbě</button>
+      <div id="error" class="error" aria-live="polite"></div>
+    </form>
+
+    <section id="payment" class="hidden">
+      <div class="notice">Objednávka byla vytvořena. V ostrém provozu by teď následovala platební brána.</div>
+      <button id="simulatePayment" class="btn primary" type="button">Simulovat úspěšnou platbu</button>
+      <button id="back" class="btn secondary" type="button">Změnit údaje</button>
+    </section>
+
+    <section id="success" class="hidden success">
+      <div class="eyebrow">PLATBA POTVRZENA</div>
+      <h2>Herní kód je připraven</h2>
+      <p>V ostrém provozu se stejný kód zobrazí tady a současně odešle zákazníkovi e-mailem.</p>
+      <div class="code" id="licenseCode"></div>
+      <button id="copyCode" class="btn secondary" type="button">Zkopírovat kód</button>
+      <a class="btn primary linkbtn" href="./">Přejít do hry</a>
+    </section>
+  </section>
+  <footer>Testovací prostředí · bez skutečné platby</footer>
+</main>
+<script src="purchase.js?v=1" defer></script>
+</body>
+</html>

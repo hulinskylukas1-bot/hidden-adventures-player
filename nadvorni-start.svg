@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 264" width="330" height="264" role="img" aria-label="Schéma začátku hlavolamu na nádvoří">
+  <rect width="330" height="264" fill="#ffffff"/>
+  <polygon points="0,264 165,132 330,264" fill="#ef1720"/>
+  <line x1="0" y1="0" x2="330" y2="264" stroke="#000" stroke-width="5.5" stroke-linecap="round"/>
+  <line x1="330" y1="0" x2="0" y2="264" stroke="#000" stroke-width="5.5" stroke-linecap="round"/>
+  <circle cx="243" cy="132" r="18.5" fill="#000"/>
+  <path d="M220 218 L277 169 M258 169 L277 169 L277 188" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

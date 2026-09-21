@@ -1,16 +1,14 @@
-# Hidden Adventures Player v0.6 — GPS a fotodůkazy
+# Hidden Adventures Player v0.7
 
 Veřejná HTTPS verze Playeru pro Spiknutí.
 
-Nově:
-- vychází ze stabilní v0.5.3 se synchronizací více zařízení,
-- podporuje bloky `gps` i `gps_confirmation`,
-- GPS používá skutečnou polohu telefonu a ukládá souřadnice, přesnost, čas, vzdálenost a výsledek validace,
-- pokud cílové souřadnice nejsou nastavené, poloha se uloží jako evidence s `validated: false`,
-- fotografie se skutečně nahrává do privátního bucketu `game-evidence`,
-- fotodůkaz se zapisuje do tabulky `evidence` a synchronizuje do společného postupu,
-- zachována je synchronizace až tří zařízení pomocí polling mechanismu.
+Nově ve v0.7:
+- univerzální nápovědy z `config.hints` nebo `content.hints`, včetně logování použití,
+- skutečná řadicí úloha s přesouváním položek nahoru/dolů a validací přes `correct_order`,
+- pokud správné pořadí ještě není potvrzené, Player dovolí testovací uložení bez předstírání, že jde o správné řešení,
+- maskované odpovědi používají přímo `content.placeholder` / `config.placeholder` (např. `-------- ---- & ------`),
+- zachována synchronizace více zařízení, GPS a privátní fotodůkazy z v0.6.
 
 Testovací kód: `TEST-SPIKNUTI`.
 
-GPS v mobilním prohlížeči vyžaduje HTTPS.
+Poznámka: správné pořadí u sv. Mikuláše je v datech stále označené jako `pending`; v0.7 proto tuto úlohu umí technicky odehrát, ale její finální validace čeká na potvrzené pořadí z terénu.

@@ -1,14 +1,18 @@
-# Hidden Adventures Player v0.7
+# Hidden Adventures Player v0.8
 
 Veřejná HTTPS verze Playeru pro Spiknutí.
 
-Nově ve v0.7:
-- univerzální nápovědy z `config.hints` nebo `content.hints`, včetně logování použití,
-- skutečná řadicí úloha s přesouváním položek nahoru/dolů a validací přes `correct_order`,
-- pokud správné pořadí ještě není potvrzené, Player dovolí testovací uložení bez předstírání, že jde o správné řešení,
-- maskované odpovědi používají přímo `content.placeholder` / `config.placeholder` (např. `-------- ---- & ------`),
-- zachována synchronizace více zařízení, GPS a privátní fotodůkazy z v0.6.
+Nově ve v0.8:
+- Archiv dostupný během hry přímo z horní lišty.
+- Dokumenty se do archivu přidávají až poté, co je hráč skutečně objeví.
+- Fotodůkazy z privátního Supabase Storage lze bezpečně znovu zobrazit přes krátkodobý podepsaný odkaz.
+- GPS důkazy se zobrazují jako zaznamenaná / potvrzená poloha bez zbytečného zveřejnění přesných souřadnic v rozhraní.
+- Archiv respektuje synchronizovaný stav session a funguje i po obnovení hry.
 
-Testovací kód: `TEST-SPIKNUTI`.
-
-Poznámka: správné pořadí u sv. Mikuláše je v datech stále označené jako `pending`; v0.7 proto tuto úlohu umí technicky odehrát, ale její finální validace čeká na potvrzené pořadí z terénu.
+Zachováno z v0.7.2:
+- synchronizace více zařízení,
+- GPS a privátní fotodůkazy,
+- nápovědy,
+- řazení,
+- maskované odpovědi,
+- Ukončit hru / Jiný kód.

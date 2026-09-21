@@ -340,7 +340,7 @@ async function boot(code){
  const cancelLoad=document.getElementById('cancelLoad'); if(cancelLoad)cancelLoad.onclick=clearLocalSession;
  const {data:ss,error:se}=await rpc('start_or_resume_game',{p_code:code,p_device_token:deviceToken}); if(se)throw se;
  session={...ss,code,revision:Number(ss.revision||0)}; localStorage.setItem(SESSION_KEY,JSON.stringify({token:ss.session_token,code}));
- const {data:d,error}=await rpc('get_session_game_content',{p_session_token:ss.session_token,p_device_token:deviceToken,p_locale:'cs'}); if(error)throw error; data=d;
+ data=ss.content; if(!data?.stages)throw new Error('GAME_CONTENT_UNAVAILABLE');
  const saved=ss.state||{}; if(Number.isInteger(saved.stageIndex))stageIndex=Math.max(0,Math.min(saved.stageIndex,data.stages.length-1)); if(Number.isInteger(saved.cursor))cursor=Math.max(0,saved.cursor);
  state.lastChoice=saved.lastChoice??null; state.choices=saved.choices||{}; state.solved=saved.solved||{}; state.responses=saved.responses||{}; state.quizAnswers=saved.quizAnswers||{};
  state.progressStep=Number(saved.progressStep||0); state.seenBlockIds=saved.seenBlockIds||[]; state.visitedStageIds=saved.visitedStageIds||[];
@@ -349,7 +349,17 @@ async function boot(code){
 }
 function entry(){
  root.innerHTML=`<div class="shell"><section class="case"><div class="casehead"><h1>Spiknutí</h1></div><div class="bubble task"><div class="text">Zadejte kód hry</div><div class="answer"><input id="gameCode" value="" placeholder="Kód hry" autocomplete="off" autocapitalize="characters"><button id="startGame" class="btn">Vstoupit do hry</button></div><div id="entryError" class="result muted"></div></div></section></div>`;
- document.getElementById('startGame').onclick=async()=>{try{await boot(document.getElementById('gameCode').value)}catch(e){document.getElementById('entryError').textContent=e.message.includes('INVALID_GAME_CODE')?'Neplatný kód hry.':e.message.includes('DEVICE_LIMIT_REACHED')?'Tato hra už je připojena na maximálním počtu zařízení.':`Hru se nepodařilo otevřít: ${e.message}`}};
+ document.getElementById('startGame').onclick=async()=>{
+   const btn=document.getElementById('startGame'),err=document.getElementById('entryError');
+   try{
+     btn.disabled=true;btn.textContent='Načítám…';err.textContent='';
+     await boot(document.getElementById('gameCode').value);
+   }catch(e){
+     entry();
+     const box=document.getElementById('entryError');
+     if(box)box.textContent=e.message.includes('INVALID_GAME_CODE')?'Neplatný kód hry.':e.message.includes('DEVICE_LIMIT_REACHED')?'Tato hra už je připojena na maximálním počtu zařízení.':e.message.includes('GAME_CONTENT_UNAVAILABLE')?'Obsah hry se nepodařilo načíst. Zkuste to znovu.':`Hru se nepodařilo otevřít: ${e.message}`;
+   }
+ };
 }
 async function startup(){
  try{

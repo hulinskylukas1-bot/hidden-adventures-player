@@ -30,7 +30,7 @@ async function rpc(name,params={}){
 }
 const root=document.getElementById('app');
 let data, stageIndex=0, cursor=0, visible=[], waiting=false, session=null, syncTimer=null, applyingRemote=false;
-const state={lastChoice:null,choices:{},solved:{},responses:{},quizAnswers:{}};
+const state={lastChoice:null,choices:{},solved:{},responses:{},quizAnswers:{},progressStep:0,seenBlockIds:[],visitedStageIds:[]};
 const DEVICE_KEY='ha_device_token', SESSION_KEY='ha_spiknuti_session';
 function uuid(){
  if(globalThis.crypto&&crypto.randomUUID)return crypto.randomUUID();
@@ -72,9 +72,14 @@ async function persistProgress(
 ){
  if(!session)return {accepted:true};
  if(b && markSolved){state.solved[b.id]=true;rememberResponse(b,eventType,eventData)}
+ const targetStageId=data.stages[targetStage]?.id;
+ if(targetStageId && !state.visitedStageIds.includes(targetStageId))state.visitedStageIds.push(targetStageId);
  const payload={
    stageIndex:targetStage,
    cursor:targetCursor,
+   progressStep:Number(state.progressStep||0)+1,
+   seenBlockIds:state.seenBlockIds,
+   visitedStageIds:state.visitedStageIds,
    lastChoice:state.lastChoice,
    choices:state.choices,
    solved:state.solved,
@@ -98,6 +103,9 @@ async function persistProgress(
    state.solved=result.state.solved||state.solved;
    state.responses=result.state.responses||state.responses;
    state.quizAnswers=result.state.quizAnswers||state.quizAnswers;
+   state.progressStep=Number(result.state.progressStep??state.progressStep??0);
+   state.seenBlockIds=result.state.seenBlockIds||state.seenBlockIds;
+   state.visitedStageIds=result.state.visitedStageIds||state.visitedStageIds;
  }
  localStorage.setItem(SESSION_KEY,JSON.stringify({token:session.session_token,code:session.code||''}));
  if(result?.accepted===false && forceRemoteOnReject)setTimeout(()=>applyRemoteProgress(true),0);
